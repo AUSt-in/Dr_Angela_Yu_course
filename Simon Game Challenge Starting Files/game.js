@@ -1,96 +1,110 @@
-var buttonColours = ["red", "blue", "green", "yellow"];
+// Initialize Level
+var level = 0;
+var started = false;
 
+// Array for button colours
+var buttonColours = ["red", "blue", "green", "yellow"];
+// Initialize game pattern array;
 var gamePattern = [];
+
+// Initialize clicked pattern array;
 var userClickedPattern = [];
 
-var started = false;
-var level = 0;
-
-// if playing for the first time
-$(document).keypress(function() {
+// Begin game
+$(document).keydown(function () {
   if (!started) {
+    // Update h1 to start game
     $("#level-title").text("Level " + level);
     nextSequence();
     started = true;
   }
 });
 
-// if button is clicked
-$(".btn").click(function() {
-
+// Detect when any button is clicked
+$(".btn").click(function () {
+  // Store id of clicked button
   var userChosenColour = $(this).attr("id");
+
+  // Add userChosenColour to end of userClickedPattern
   userClickedPattern.push(userChosenColour);
+  console.log(userClickedPattern);
 
   playSound(userChosenColour);
+
   animatePress(userChosenColour);
 
-  checkAnswer(userClickedPattern.length-1);
+  checkAnswer(userClickedPattern.length - 1);
 });
 
-
-function checkAnswer(currentLevel) {
-
-    if (gamePattern[currentLevel] === userClickedPattern[currentLevel]) {
-
-      console.log("success");
-
-      if (userClickedPattern.length === gamePattern.length){
-        setTimeout(function () {
-          nextSequence();
-        }, 1000);
-      }
-
-    } else {
-
-      console.log("wrong");
-
-      playSound("wrong");
-
-      $("body").addClass("game-over");
-      setTimeout(function () {
-        $("body").removeClass("game-over");
-      }, 200);
-
-      $("#level-title").text("Game Over, Press Any Key to Restart");
-
-      //2. Call startOver() if the user gets the sequence wrong.
-      startOver();
-    }
-
-}
-
-// checks for next function
 function nextSequence() {
-
   userClickedPattern = [];
-  level++;
-  $("#level-title").text("Level " + level);
 
-  var randomNumber = Math.floor(Math.random() * 4);
+  level++;
+  // Update h1 to appropiate level
+  $("#level-title").text("Level " + level);
+  // Generates a random number between 0-3
+  var randomNumber = Math.round(Math.random() * 3);
+  // Select random colour from buttonColurs array
   var randomChosenColour = buttonColours[randomNumber];
+  // Add new randomChosenColur to end of gamePattern array
   gamePattern.push(randomChosenColour);
 
-  $("#" + randomChosenColour).fadeIn(100).fadeOut(100).fadeIn(100);
+  // Animate randomChosenColour
+  $("#" + randomChosenColour)
+    .fadeIn(100)
+    .fadeOut(100)
+    .fadeIn(100);
+
+  // Play sound for button
   playSound(randomChosenColour);
 }
 
-// inputs sounds from SOunds folder
 function playSound(name) {
   var audio = new Audio("sounds/" + name + ".mp3");
   audio.play();
 }
 
-// animates CSS with pressed from CSS file
-function animatePress(currentColor) {
-  $("#" + currentColor).addClass("pressed");
+function animatePress(currentColour) {
+  // Add pressed css class to button when clicked
+  $("#" + currentColour).addClass("pressed");
+
+  // Remove pressed css class after 100 milliseconds
   setTimeout(function () {
-    $("#" + currentColor).removeClass("pressed");
+    $("#" + currentColour).removeClass("pressed");
   }, 100);
 }
 
-// starting over the game again
-function startOver() {
+function checkAnswer(currentLevel) {
+  // Check if user most recent user answer is the same as game pattern
+  if (gamePattern[currentLevel] === userClickedPattern[currentLevel]) {
+    console.log("success");
 
+    // If correct, move on
+    if (userClickedPattern.length === gamePattern.length) {
+      setTimeout(function () {
+        nextSequence();
+      }, 1000);
+    }
+  } else {
+    // Play wrong sound
+    playSound("wrong");
+
+    // Flash red if user got the wrong answer
+    $("body").addClass("game-over");
+    setTimeout(function () {
+      $("body").removeClass("game-over");
+    }, 200);
+
+    // Update h1 title to Restart
+    $("#level-title").text("Game Over, Press Any Key to Restart");
+
+    // Restart the game
+    startOver();
+    console.log("wrong");
+  }
+}
+
+function startOver() {
   level = 0;
   gamePattern = [];
   started = false;
